@@ -27,6 +27,9 @@ export class Comment {
   @Column('int', { name: 'cardId', nullable: false })
   cardId: number;
 
+  @Column({ type: 'varchar', nullable: false })
+  content: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

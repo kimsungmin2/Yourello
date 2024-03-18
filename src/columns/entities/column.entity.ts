@@ -22,7 +22,7 @@ export class Columns {
   id: number;
 
   @Column({ type: 'varchar', nullable: false })
-  status: string;
+  title: string;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -40,18 +40,6 @@ export class User {
   @OneToMany((type) => Comment, (comment) => comment.user)
   comment: Comment[];
 
-  @OneToMany((type) => Card, (card) => card.createUser)
-  createCards: Card[];
-
-  @OneToMany((type) => Card, (card) => card.workerUser)
-  workerCards: Card[];
-
-  @OneToMany((type) => Board, (board) => board.createUser)
-  createBoards: Board[];
-
-  @OneToMany((type) => Board, (board) => board.workerUser)
-  workerBoards: Board[];
-
   @OneToMany((type) => BoardMember, (boardMember) => boardMember.user)
   boardMember: BoardMember[];
 }

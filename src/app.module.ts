@@ -17,6 +17,7 @@ import { Columns } from './columns/entities/column.entity';
 import { BoardMember } from './boards/entities/boardmember.entity';
 import * as Joi from 'joi';
 import { LoggerMiddleware } from './utils/middleware/logger.middleware';
+import { CardWorker } from './cards/entities/cardworker.entity';
 
 const typeOrmModuleOptions = {
   useFactory: async (configService: ConfigService): Promise<TypeOrmModuleOptions> => ({
@@ -27,7 +28,7 @@ const typeOrmModuleOptions = {
     host: configService.get('DB_HOST'),
     port: configService.get('DB_PORT'),
     database: configService.get('DB_NAME'),
-    entities: [User, Board, Card, Comment, Columns, BoardMember],
+    entities: [User, Board, Card, Comment, Columns, BoardMember, CardWorker, BoardMember],
     synchronize: configService.get('DB_SYNC'),
     logging: true,
   }),

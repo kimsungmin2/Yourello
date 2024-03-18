@@ -12,6 +12,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { CardWorker } from './cardworker.entity';
 
 @Entity({
   name: 'card',
@@ -21,13 +22,16 @@ export class Card {
   id: number;
 
   @Column({ type: 'varchar', nullable: false })
-  name: string;
+  title: string;
 
   @Column({ type: 'varchar', nullable: false })
   info: string;
 
   @Column({ type: 'varchar', nullable: false })
   color: string;
+
+  @Column({ type: 'varchar', nullable: false })
+  deadLine: string;
 
   @Column({ type: 'varchar', nullable: false })
   cardImage: string;
@@ -41,22 +45,8 @@ export class Card {
   @DeleteDateColumn()
   deletedAt: Date | null;
 
-  @Column('int', { name: 'createUserId', nullable: false })
-  createUserId: number;
-
-  @Column('int', { name: ' workerUserId', nullable: false })
-  workerUserId: number;
-
   @Column('int', { name: 'columnId', nullable: false })
   columnId: number;
-
-  @ManyToOne(() => User)
-  @JoinColumn({ name: 'createUserId', referencedColumnName: 'id' })
-  createUser: User;
-
-  @ManyToOne(() => User)
-  @JoinColumn({ name: 'workerUserId', referencedColumnName: 'id' })
-  workerUser: User;
 
   @ManyToOne(() => Columns, (column) => column.card)
   @JoinColumn([{ name: 'columnId', referencedColumnName: 'id' }])
@@ -64,4 +54,7 @@ export class Card {
 
   @OneToMany((type) => Comment, (comment) => comment.card)
   comment: Comment[];
+
+  @OneToMany((type) => CardWorker, (cardWorker) => cardWorker.card)
+  cardWorker: CardWorker[];
 }

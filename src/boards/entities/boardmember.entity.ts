@@ -12,6 +12,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Board } from './board.entity';
+import { CardWorker } from 'src/cards/entities/cardworker.entity';
 
 @Entity({
   name: 'boardMember',
@@ -42,4 +43,7 @@ export class BoardMember {
   @ManyToOne(() => Board, (board) => board.boardMember)
   @JoinColumn({ name: 'boardId', referencedColumnName: 'id' })
   board: Board;
+
+  @OneToMany((type) => CardWorker, (cardWorker) => cardWorker.boardMember)
+  cardWorker: CardWorker[];
 }

@@ -15,7 +15,7 @@ export class UsersService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async signUp(email: string, password: string, name: string, Introduce: string, passwordConfirm: string) {
+  async signUp(email: string, password: string, name: string, introduce: string, passwordConfirm: string) {
     const existingUser = await this.findByEmail(email);
     if (existingUser) {
       throw new ConflictException('이미 해당 이메일로 가입된 사용자가 있습니다!');
@@ -29,7 +29,7 @@ export class UsersService {
       email,
       password: hashedPassword,
       name,
-      Introduce,
+      introduce,
     });
 
     return user;

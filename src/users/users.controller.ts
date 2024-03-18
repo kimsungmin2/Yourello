@@ -1,15 +1,15 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Render, Res, UseGuards, Req, ForbiddenException } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/utils/guard/jwt.guard';
 import { UserInfo } from 'src/utils/decorator/userInfo.decorator';
 import { User } from './entities/user.entity';
 import { SignUpDto } from './dto/sign.dto';
 import { LoginDto } from './dto/login.dto';
 import { UpdateDto } from './dto/update.dto';
-import { update } from 'lodash';
 import { DeleteDto } from './dto/delete.dto';
 
+@ApiTags('User')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -21,7 +21,7 @@ export class UsersController {
       signUpdto.email,
       signUpdto.password,
       signUpdto.name,
-      signUpdto.Introduce,
+      signUpdto.introduce,
       signUpdto.passwordConfirm,
     );
     return user;

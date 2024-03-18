@@ -42,5 +42,5 @@ export class SignUpDto {
     description: '자기소개',
   })
   @IsNotEmpty({ message: '소개를 입력해주세요.' })
-  Introduce: string;
+  introduce: string;
 }
