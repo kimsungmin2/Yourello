@@ -14,14 +14,14 @@ import {
 import { BoardMember } from './boardmember.entity';
 
 @Entity({
-  name: 'card',
+  name: 'board',
 })
 export class Board {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ type: 'varchar', nullable: false })
-  status: string;
+  title: string;
 
   @Column({ type: 'varchar', nullable: false })
   backgroundcolor: string;

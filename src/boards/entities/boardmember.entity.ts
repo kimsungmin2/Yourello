@@ -27,6 +27,9 @@ export class BoardMember {
   @Column('int', { name: 'boardId', nullable: false })
   boardId: number;
 
+  @Column({ type: 'boolean', nullable: false, default: false })
+  owner: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 
