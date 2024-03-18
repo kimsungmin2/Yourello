@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Render, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Render, Res, UseGuards, Req, ForbiddenException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/utils/guard/jwt.guard';
@@ -6,6 +6,9 @@ import { UserInfo } from 'src/utils/decorator/userInfo.decorator';
 import { User } from './entities/user.entity';
 import { SignUpDto } from './dto/sign.dto';
 import { LoginDto } from './dto/login.dto';
+import { UpdateDto } from './dto/update.dto';
+import { update } from 'lodash';
+import { DeleteDto } from './dto/delete.dto';
 
 @Controller('users')
 export class UsersController {
@@ -47,7 +50,7 @@ export class UsersController {
   @Get('')
   @Render('users')
   getUser(@UserInfo() user: User) {
-    return { 이름: user.name, 자기소개: user.Introduce };
+    return { 이름: user.name, 자기소개: user.introduce };
   }
 
   @ApiOperation({ summary: '로그아웃', description: '로그아웃' })
@@ -57,5 +60,20 @@ export class UsersController {
     res.clearCookie('authorization');
     res.clearCookie('refreshToken');
     res.send('로그아웃에 성공하였습니다.');
+  }
+
+  async userUpdate(@Body() updateDto: UpdateDto, @Req() req) {
+    const { id } = req.user;
+
+    const userUpdate = await this.usersService.userUpdate(id, updateDto.password, updateDto.name, updateDto.introduce);
+    return userUpdate;
+  }
+
+  async userDelete(@Body() deleteDto: DeleteDto, @Req() req) {
+    const { id } = req.user;
+    if (deleteDto.password !== deleteDto.confirmPassword) {
+      throw new ForbiddenException('입력한 비밀번호와 확인 비밀번호가 같지 않습니다.');
+    }
+    return await this.usersService.userDelete(id, deleteDto.password);
   }
 }

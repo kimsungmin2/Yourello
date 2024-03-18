@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { DataSource, Repository } from 'typeorm';
@@ -80,5 +80,31 @@ export class UsersService {
   async findByEmail(email: string) {
     const user = await this.userRepository.findOne({ where: { email } });
     return user;
+  }
+
+  async userUpdate(id: number, password: string, name: string, introduce: string) {
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    if (!(await compare(password, user.password))) {
+      throw new ForbiddenException('비밀번호가 일치하지 않습니다.');
+    }
+
+    return this.userRepository.update(id, { name, introduce });
+  }
+
+  async userDelete(id: number, password: string) {
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    if (!(await compare(password, user.password))) {
+      throw new ForbiddenException('비밀번호가 일치하지 않습니다.');
+    }
+
+    return this.userRepository.delete(id);
   }
 }

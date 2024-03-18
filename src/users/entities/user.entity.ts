@@ -26,7 +26,7 @@ export class User {
   role: Role;
 
   @Column({ type: 'varchar', select: true, nullable: false })
-  Introduce: string;
+  introduce: string;
 
   @CreateDateColumn()
   createdAt: Date;
