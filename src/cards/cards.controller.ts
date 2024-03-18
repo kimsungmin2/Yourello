@@ -1,17 +1,37 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseInterceptors, UploadedFile, UseGuards, Put } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Req,
+  UseInterceptors,
+  UploadedFile,
+  UseGuards,
+  Put,
+  NotAcceptableException,
+} from '@nestjs/common';
 import { CardsService } from './cards.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiConsumes, ApiOperation } from '@nestjs/swagger';
+import { ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { WorkerDto } from './dto/worker.dto';
 import { ColumnDto } from './dto/column.dto';
 import { OrderDto } from './dto/updateOrder.dto';
+import { CardListService } from './card-list.service';
+import { CheckList } from './dto/checkList.dto';
 
+@ApiTags('Card')
 @Controller('cards')
 export class CardsController {
-  constructor(private readonly cardsService: CardsService) {}
+  constructor(
+    private readonly cardsService: CardsService,
+    private readonly cardListService: CardListService,
+  ) {}
 
   @ApiOperation({ summary: '마감임박 카드 리스트' })
   @UseGuards(AuthGuard('jwt'))
@@ -26,6 +46,31 @@ export class CardsController {
   async getCardList(@Param('columnId') columnId: number, @Req() req) {
     const user = req.user;
     return await this.cardsService.getCardList(columnId);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: '카드 리스트 조회' })
+  @Get(':cardId/checkList')
+  async getCheckList(@Param('cardId') cardId: number) {
+    return await this.cardListService.getCheckList(cardId);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: '카드 리스트 생성' })
+  @Post(':cardId/checkList')
+  async createCheckList(@Param('cardId') cardId: number, @Body() checkList: CheckList) {
+    return await this.cardListService.checkList(cardId, checkList.content);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: '카드 리스트 생성' })
+  @Post(':cardId/checkList/:cardCheckListid')
+  async checKignList(@Param('cardCheckListid') cardId: number, cardCheckListid: number) {
+    const card = await this.cardsService.getCardById(cardId);
+    if (!card) {
+      throw new NotAcceptableException('카드가 존재하지 않습니다.');
+    }
+    return await this.cardListService.checkListUpdate(cardCheckListid);
   }
 
   @ApiConsumes('multipart/form-data')

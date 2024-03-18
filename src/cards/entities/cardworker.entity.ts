@@ -38,7 +38,7 @@ export class CardWorker {
   cardId: number;
 
   @ManyToOne(() => Card, (card) => card.cardWorker)
-  @JoinColumn([{ name: 'columnId', referencedColumnName: 'id' }])
+  @JoinColumn([{ name: 'cardId', referencedColumnName: 'id' }])
   card: Card;
 
   @ManyToOne(() => User, (user) => user.cardWorker)

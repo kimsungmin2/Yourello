@@ -15,10 +15,12 @@ import { Card } from './cards/entities/card.entity';
 import { Comment } from './comments/entities/comment.entity';
 import { Columns } from './columns/entities/column.entity';
 import { BoardMember } from './boards/entities/boardmember.entity';
-import * as Joi from 'joi';
+import Joi from 'joi';
 import { LoggerMiddleware } from './utils/middleware/logger.middleware';
 import { CardWorker } from './cards/entities/cardworker.entity';
-
+import { AwsModule } from './aws/aws.module';
+import { CardList } from './cards/entities/cardList.entity';
+import { CardListService } from './cards/card-list.service';
 const typeOrmModuleOptions = {
   useFactory: async (configService: ConfigService): Promise<TypeOrmModuleOptions> => ({
     namingStrategy: new SnakeNamingStrategy(),
@@ -28,7 +30,7 @@ const typeOrmModuleOptions = {
     host: configService.get('DB_HOST'),
     port: configService.get('DB_PORT'),
     database: configService.get('DB_NAME'),
-    entities: [User, Board, Card, Comment, Columns, BoardMember, CardWorker, BoardMember],
+    entities: [User, Board, Card, Comment, Columns, BoardMember, CardWorker, BoardMember, CardList],
     synchronize: configService.get('DB_SYNC'),
     logging: true,
   }),
@@ -54,6 +56,7 @@ const typeOrmModuleOptions = {
     CardsModule,
     ColumnsModule,
     CommentsModule,
+    AwsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
