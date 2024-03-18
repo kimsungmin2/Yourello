@@ -47,6 +47,6 @@ export class BoardMember {
   @JoinColumn({ name: 'boardId', referencedColumnName: 'id' })
   board: Board;
 
-  @OneToMany((type) => CardWorker, (cardWorker) => cardWorker.boardMember)
-  cardWorker: CardWorker[];
+  //   @OneToMany((type) => CardWorker, (cardWorker) => cardWorker.boardMember)
+  //   cardWorker: CardWorker[];
 }

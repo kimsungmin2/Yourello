@@ -13,6 +13,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Card } from './card.entity';
+import { User } from 'src/users/entities/user.entity';
 
 @Entity({
   name: 'cardWorker',
@@ -30,8 +31,8 @@ export class CardWorker {
   @DeleteDateColumn()
   deletedAt: Date | null;
 
-  @Column('int', { name: 'boardMemberId', nullable: false })
-  boardMemberId: number;
+  @Column('int', { name: 'ownerId', nullable: false })
+  ownerId: number;
 
   @Column('int', { name: 'cardId', nullable: false })
   cardId: number;
@@ -40,7 +41,10 @@ export class CardWorker {
   @JoinColumn([{ name: 'columnId', referencedColumnName: 'id' }])
   card: Card;
 
-  @ManyToOne(() => BoardMember, (boardMember) => boardMember.cardWorker)
-  @JoinColumn([{ name: 'boardMemberId', referencedColumnName: 'id' }])
-  boardMember: BoardMember;
+  @ManyToOne(() => User, (user) => user.cardWorker)
+  @JoinColumn([{ name: 'ownerId', referencedColumnName: 'id' }])
+  user: User;
+
+  @Column({ type: 'int', nullable: false })
+  worker: number;
 }
