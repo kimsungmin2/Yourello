@@ -5,7 +5,7 @@ import { DataSource, Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcrypt';
 import { Role } from './types/userRole.type';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 @Injectable()
 export class UsersService {

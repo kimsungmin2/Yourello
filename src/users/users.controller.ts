@@ -36,7 +36,6 @@ export class UsersController {
 
   @ApiOperation({ summary: '로그인' })
   @Post('login')
-  @Render('sign-in')
   async login(@Body() loginDto: LoginDto, @Res() res) {
     const user = await this.usersService.login(loginDto.email, loginDto.password);
 

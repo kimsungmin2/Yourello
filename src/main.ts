@@ -6,12 +6,11 @@ import * as passport from 'passport';
 import * as cookieParser from 'cookie-parser';
 import * as session from 'express-session';
 import { HttpExceptionFilter } from './utils/fillter/http-exception.filter';
-import { NestExpressApplication } from '@nestjs/platform-express';
 
 declare const module: any;
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new HttpExceptionFilter());
 
@@ -39,7 +38,7 @@ async function bootstrap() {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 3030;
   await app.listen(port);
   console.log(`listening on port ${port}`);
 
