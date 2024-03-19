@@ -232,18 +232,4 @@ export class CardsService {
     });
     return newCard;
   }
-
-  // async changeColumnOrder(orderNum: number, afterItemId: number) {
-  //   const afterColumn = await this.cardRepository.findOneBy({ id: afterItemId });
-  //   const nextItem = await this.yourRepository.findOne({
-  //     where: { orderValue: MoreThan(afterItem.orderValue) },
-  //     order: { orderValue: 'ASC' },
-  //   });
-
-  //     const newOrderValue = nextItem ? (afterItem.orderValue + nextItem.orderValue) / 2 : afterItem.orderValue + 1024;
-
-  //     const itemToUpdate = await this.yourRepository.findOneBy({ id: itemId });
-  //     itemToUpdate.orderValue = newOrderValue;
-  //     return this.yourRepository.save(itemToUpdate);
-  //   }
 }
