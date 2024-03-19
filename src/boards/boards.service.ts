@@ -1,9 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
 import { Board } from './entities/board.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as _ from 'lodash';
+import { InviteDto } from './dto/invite.dto';
 
 @Injectable()
 export class BoardsService {
@@ -28,14 +30,26 @@ export class BoardsService {
   }
 
   async findOne(id: number) {
-    return await this.boardRepository.findBy({ id });
+    return await this.verifyBoard(id);
   }
 
-  update(id: number, updateBoardDto: UpdateBoardDto) {
-    return `This action updates a #${id} board`;
+  async update(id: number, updateBoardDto: UpdateBoardDto) {
+    const board = await this.verifyBoard(id);
+    const data = updateBoardDto;
+    return await this.boardRepository.update({ id }, data);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} board`;
+  async remove(id: number) {
+    const board = await this.verifyBoard(id);
+    await this.boardRepository.delete({ id });
+  }
+
+  async invite(inviteDto: InviteDto) {}
+
+  private async verifyBoard(id: number) {
+    const board = await this.boardRepository.findOneBy({ id });
+    if (_.isNil(board)) {
+      throw new NotFoundException('보드를 찾을 수 없습니다.');
+    }
   }
 }
