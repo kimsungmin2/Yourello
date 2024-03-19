@@ -1,18 +1,33 @@
 import { Injectable } from '@nestjs/common';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
+import { Board } from './entities/board.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class BoardsService {
-  create(createBoardDto: CreateBoardDto) {
-    return 'This action adds a new board';
+  constructor(
+    @InjectRepository(Board)
+    private boardRepository: Repository<Board>,
+  ) {}
+  async create(createBoardDto: CreateBoardDto) {
+    const { title, backgroundcolor, explanation } = createBoardDto;
+
+    return await this.boardRepository.save({
+      title,
+      backgroundcolor,
+      explanation,
+    });
   }
 
-  findAll() {
-    return `This action returns all boards`;
+  async findAll(): Promise<Board[]> {
+    return await this.boardRepository.find({
+      select: ['id', 'title', 'explanation'],
+    });
   }
 
-  findOne(id: number) {
+  async findOne(id: number) {
     return `This action returns a #${id} board`;
   }
 
