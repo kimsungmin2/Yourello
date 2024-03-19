@@ -48,7 +48,6 @@ export class UsersController {
   @ApiOperation({ summary: '유저 정보' })
   @UseGuards(AuthGuard('jwt'))
   @Get('')
-  @Render('users')
   getUser(@UserInfo() user: User) {
     return { 이름: user.name, 자기소개: user.introduce };
   }
@@ -61,14 +60,16 @@ export class UsersController {
     res.clearCookie('refreshToken');
     res.send('로그아웃에 성공하였습니다.');
   }
-
+  @ApiOperation({ summary: '유저 정보 업데이트', description: '업데이트' })
+  @Patch('')
   async userUpdate(@Body() updateDto: UpdateDto, @Req() req) {
     const { id } = req.user;
 
     const userUpdate = await this.usersService.userUpdate(id, updateDto.password, updateDto.name, updateDto.introduce);
     return userUpdate;
   }
-
+  @ApiOperation({ summary: '유저 삭제', description: '삭제' })
+  @Delete('')
   async userDelete(@Body() deleteDto: DeleteDto, @Req() req) {
     const { id } = req.user;
     if (deleteDto.password !== deleteDto.confirmPassword) {
