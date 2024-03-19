@@ -74,7 +74,7 @@ export class CardsService {
     }
   }
 
-  async getCardById(cardId: number) {
+  async getCardById(cardId: number): Promise<Card> {
     const card = await this.cardRepository.findOneBy({ id: cardId });
     if (!card) {
       throw new NotFoundException('해당 카드가 없습니다.');
@@ -82,7 +82,14 @@ export class CardsService {
     return card;
   }
 
-  async getDeadLineCardList(columnId: number) {
+  async checkCardOwner(cardId: number, userId: number): Promise<void> {
+    const cardWorker = await this.cardWorkerRepository.findOneBy({ cardId });
+    if (!cardWorker || cardWorker.ownerId !== userId) {
+      throw new ForbiddenException('변경 권한이 없습니다.');
+    }
+  }
+
+  async getDeadLineCardList(columnId: number): Promise<Card[]> {
     const cards = await this.cardRepository.find({
       where: { columnId },
       order: {
@@ -93,51 +100,36 @@ export class CardsService {
     return cards;
   }
 
-  async changeCardOrder(cardId: number, orderNum: number, userId: number): Promise<void> {
+  async changeCardOrder(cardId: number, newOrderNum: number, userId: number): Promise<void> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const card = await queryRunner.manager.getRepository(Card).findOneBy({ id: cardId });
-      const cardWorker = await queryRunner.manager.getRepository(CardWorker).findOneBy({ cardId });
-      if (!cardWorker) {
-        throw new NotFoundException('카드가 없습니다.');
-      }
-      if (cardWorker.ownerId !== userId) {
-        throw new ForbiddenException('변경 권환이 없습니다.');
-      }
-      if (!card) {
-        throw new NotFoundException('카드를 찾을 수 없습니다.');
-      }
-      await queryRunner.manager
-        .getRepository(Card)
-        .createQueryBuilder('card')
-        .where('card.id = :id', { id: cardId })
-        .setLock('pessimistic_write')
-        .getOne();
-      if (orderNum > 0) {
-        const newOrderNum = card.orderNum - orderNum;
+      const card = await this.getCardById(cardId);
+      await this.checkCardOwner(cardId, userId);
 
+      if (card.orderNum < newOrderNum) {
         await queryRunner.manager
-          .createQueryBuilder()
-          .update(Card)
-          .set({ orderNum: () => 'orderNum + 1' })
-          .where('orderNum > :newOrderNum', { newOrderNum })
-          .execute();
-      } else {
-        const newOrderNum = card.orderNum + orderNum;
-
-        await queryRunner.manager
-          .createQueryBuilder()
+          .getRepository(Card)
+          .createQueryBuilder('card')
           .update(Card)
           .set({ orderNum: () => 'orderNum - 1' })
-          .where('orderNum < :newOrderNum', { newOrderNum })
+          .where('orderNum <= :newOrderNum AND orderNum > :orderNum', { newOrderNum, orderNum: card.orderNum })
           .execute();
-        await queryRunner.manager.getRepository(Card).update(cardId, {
-          orderNum: newOrderNum,
-        });
+      } else if (card.orderNum > newOrderNum) {
+        await queryRunner.manager
+          .getRepository(Card)
+          .createQueryBuilder('card')
+          .update(Card)
+          .set({ orderNum: () => 'orderNum + 1' })
+          .where('orderNum < :orderNum AND orderNum >= :newOrderNum', { newOrderNum, orderNum: card.orderNum })
+          .execute();
       }
+
+      await queryRunner.manager.getRepository(Card).update(cardId, {
+        orderNum: newOrderNum,
+      });
 
       await queryRunner.commitTransaction();
     } catch (error) {
@@ -148,7 +140,7 @@ export class CardsService {
     }
   }
 
-  async getCardList(columnId: number) {
+  async getCardList(columnId: number): Promise<Card[]> {
     const card = await this.dataSource
       .getRepository(Card)
       .createQueryBuilder('card')
@@ -159,20 +151,17 @@ export class CardsService {
   }
 
   async updateWorkerCard(cardId: number, userId: number, worker: number) {
-    const card = await this.cardRepository.findOneBy({ id: cardId });
-    if (!card) {
-      throw new NotFoundException('해당 카드가 없습니다.');
-    }
+    await this.getCardById(cardId);
     const cardWorker = await this.cardWorkerRepository.findOneBy({ cardId });
     if (cardWorker.ownerId !== userId) {
       throw new ForbiddenException('변경 권환이 없습니다.');
     }
 
-    const workerUpdate = await this.cardWorkerRepository.update(cardWorker.id, { worker: worker });
+    const workerUpdate = await this.cardWorkerRepository.update(cardWorker.id, { worker });
     return workerUpdate;
   }
 
-  async updateCard(cardId: number, userId: number, updateCardDto: UpdateCardDto, file: Express.Multer.File) {
+  async updateCard(cardId: number, userId: number, updateCardDto: UpdateCardDto, file: Express.Multer.File): Promise<void> {
     const imageName = this.awsService.getUUID();
     const ext = file.originalname.split('.').pop();
     const imageUrl = await this.awsService.imageUploadToS3(`${imageName}.${ext}`, file, ext);
@@ -181,17 +170,8 @@ export class CardsService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const card = await queryRunner.manager.getRepository(Card).findOneBy({ id: cardId });
-      if (!card) {
-        throw new NotFoundException('해당 카드가 없습니다.');
-      }
-      const cardWorker = await queryRunner.manager.getRepository(CardWorker).findOneBy({ cardId });
-      if (!cardWorker) {
-        throw new NotFoundException('카드가 없습니다.');
-      }
-      if (cardWorker.ownerId !== userId) {
-        throw new ForbiddenException('변경 권환이 없습니다.');
-      }
+      await this.getCardById(cardId);
+      await this.checkCardOwner(cardId, userId);
       await queryRunner.manager.getRepository(Card).update(cardId, {
         title: updateCardDto.title,
         info: updateCardDto.info,
@@ -206,22 +186,13 @@ export class CardsService {
     }
   }
 
-  async updatedColumn(cardId: number, userId: number, columnId: number) {
+  async updatedColumn(cardId: number, userId: number, columnId: number): Promise<void> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const card = await queryRunner.manager.getRepository(Card).findOneBy({ id: cardId });
-      if (!card) {
-        throw new NotFoundException('해당 카드가 없습니다.');
-      }
-      const cardWorker = await queryRunner.manager.getRepository(CardWorker).findOneBy({ cardId });
-      if (!cardWorker) {
-        throw new NotFoundException('카드가 없습니다.');
-      }
-      if (cardWorker.ownerId !== userId) {
-        throw new ForbiddenException('변경 권환이 없습니다.');
-      }
+      const card = await this.getCardById(cardId);
+      await this.checkCardOwner(cardId, userId);
       const column = await queryRunner.manager.getRepository(Columns).findOneBy({ id: card.columnId });
       const NewColumn = await queryRunner.manager.getRepository(Columns).findOneBy({ id: columnId });
       if (!NewColumn) {
@@ -239,19 +210,40 @@ export class CardsService {
     }
   }
 
-  async deleteCard(cardId: number, userId: number) {
-    const card = await this.cardRepository.findOneBy({ id: cardId });
-    if (!card) {
-      throw new NotFoundException('해당 카드가 없습니다.');
-    }
-    const cardWorker = await this.cardWorkerRepository.findOneBy({ cardId });
-    if (cardWorker.ownerId !== userId) {
-      throw new ForbiddenException('변경 권환이 없습니다.');
-    }
+  async deleteCard(cardId: number, userId: number): Promise<void> {
+    await this.getCardById(cardId);
+    await this.checkCardOwner(cardId, userId);
+
     try {
       await this.cardRepository.delete({ id: cardId });
     } catch (error) {
       throw new InternalServerErrorException('카드 삭제 중 오류가 발생했습니다.');
     }
   }
+  //보드에서 컬럼 생성 혼자 해봄 걍 다 보드로 보면 됨
+  async createBoardOrder(boardId: number) {
+    const lastCard = await this.cardRepository.findOne({
+      order: { orderNum: 'DESC' },
+    });
+    const cardOrderNum = lastCard ? lastCard.orderNum + 1024 : 1024;
+    const newCard = await this.cardRepository.save({
+      columnId: boardId,
+      orderNum: cardOrderNum,
+    });
+    return newCard;
+  }
+
+  // async changeColumnOrder(orderNum: number, afterItemId: number) {
+  //   const afterColumn = await this.cardRepository.findOneBy({ id: afterItemId });
+  //   const nextItem = await this.yourRepository.findOne({
+  //     where: { orderValue: MoreThan(afterItem.orderValue) },
+  //     order: { orderValue: 'ASC' },
+  //   });
+
+  //     const newOrderValue = nextItem ? (afterItem.orderValue + nextItem.orderValue) / 2 : afterItem.orderValue + 1024;
+
+  //     const itemToUpdate = await this.yourRepository.findOneBy({ id: itemId });
+  //     itemToUpdate.orderValue = newOrderValue;
+  //     return this.yourRepository.save(itemToUpdate);
+  //   }
 }

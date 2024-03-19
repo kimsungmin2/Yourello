@@ -21,6 +21,8 @@ import { CardWorker } from './cards/entities/cardworker.entity';
 import { AwsModule } from './aws/aws.module';
 import { CardList } from './cards/entities/cardList.entity';
 import { CardListService } from './cards/card-list.service';
+import { AuthModule } from './auth/auth.module';
+
 const typeOrmModuleOptions = {
   useFactory: async (configService: ConfigService): Promise<TypeOrmModuleOptions> => ({
     namingStrategy: new SnakeNamingStrategy(),
@@ -57,6 +59,7 @@ const typeOrmModuleOptions = {
     ColumnsModule,
     CommentsModule,
     AwsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

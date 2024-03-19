@@ -10,15 +10,15 @@ export class CardListService {
     @InjectRepository(Card)
     private cardRepository: Repository<Card>,
     @InjectRepository(CardList)
-    private cardWorkerRepository: Repository<CardList>,
+    private cardListRepository: Repository<CardList>,
   ) {}
 
   async checkList(cardId: number, cardContent: string) {
-    const card = this.cardRepository.findOneBy({ id: cardId });
+    const card = await this.cardRepository.findOneBy({ id: cardId });
     if (!card) {
       throw new NotAcceptableException('존재하지 않는 카드입니다.');
     }
-    const checkId = this.cardWorkerRepository.save({
+    const checkId = await this.cardListRepository.save({
       cardId,
       cardContent,
     });
@@ -26,10 +26,34 @@ export class CardListService {
   }
 
   async checkListUpdate(cardListId: number) {
-    return this.cardWorkerRepository.update(cardListId, { checking: true });
+    const checklist = await this.cardListRepository.findOneBy({ id: cardListId });
+    if (!checklist) {
+      throw new NotAcceptableException('존재하지 않는 카드리스트입니다.');
+    }
+    const card = await this.cardRepository.findOneBy({ id: checklist.cardId });
+    if (!card) {
+      throw new NotAcceptableException('존재하지 않는 카드입니다.');
+    }
+    return await this.cardListRepository.update(cardListId, { checking: !checklist.checking });
   }
 
   async getCheckList(cardId: number) {
-    return this.cardWorkerRepository.find({ where: { cardId } });
+    const checkList = await this.cardListRepository.find({ where: { cardId } });
+    const completeCheck = checkList.filter((item) => item.checking).length;
+
+    const checkListPercentage = checkList.length > 0 ? (completeCheck / checkList.length) * 100 : 0;
+    return checkListPercentage;
+  }
+
+  async deleteCheckList(cardListId: number) {
+    const checklist = await this.cardListRepository.findOneBy({ id: cardListId });
+    if (!checklist) {
+      throw new NotAcceptableException('존재하지 않는 카드리스트입니다.');
+    }
+    const card = await this.cardRepository.findOneBy({ id: checklist.cardId });
+    if (!card) {
+      throw new NotAcceptableException('존재하지 않는 카드입니다.');
+    }
+    return await this.cardListRepository.delete({ id: cardListId });
   }
 }

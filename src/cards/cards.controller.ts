@@ -106,12 +106,12 @@ export class CardsController {
     const card = await this.cardsService.updateWorkerCard(cardId, user.id, workerDto.worker);
     return card;
   }
-  @ApiOperation({ summary: '카드 컬럼 변경' })
+  @ApiOperation({ summary: '카드 순서 변경' })
   @UseGuards(AuthGuard('jwt'))
   @Patch('change/:cardId/')
   async changeCardOrder(@Param('cardId') cardId: number, @Body() orderDto: OrderDto, @Req() req) {
     const user = req.user;
-    const order = await this.cardsService.changeCardOrder(cardId, orderDto.orderNum, user.id);
+    const order = await this.cardsService.changeCardOrder(cardId, orderDto.newOrderNum, user.id);
     return order;
   }
 
@@ -146,5 +146,13 @@ export class CardsController {
   async deleteCard(@Param('cardId') cardId: number, @Req() req) {
     const user = req.user;
     await this.cardsService.deleteCard(cardId, user.id);
+  }
+
+  @ApiOperation({ summary: '카드 리스트 삭제' })
+  @UseGuards(AuthGuard('jwt'))
+  @Delete(':cardListId')
+  async deleteCardList(@Param('cardListId') cardListId: number, @Req() req) {
+    const user = req.user;
+    return await this.cardListService.deleteCheckList(cardListId);
   }
 }
