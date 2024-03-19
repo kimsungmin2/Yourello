@@ -33,6 +33,9 @@ export class Columns {
   @DeleteDateColumn()
   deletedAt: Date | null;
 
+  @Column({ default: 0 })
+  order: number;
+
   @Column('int', { name: 'boardId', nullable: false })
   boardId: number;
 
