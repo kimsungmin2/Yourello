@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { AuthGuard } from '@nestjs/passport';
+import { AuthGuard } from '@nestjs/passport'
 import { Role } from 'src/users/types/userRole.type';
 
 @Injectable()

@@ -1,6 +1,6 @@
 import { S3Client } from '@aws-sdk/client-s3';
 import { ConfigService } from '@nestjs/config';
-import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
+import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface'
 import multerS3 from 'multer-s3';
 import { basename, extname } from 'path';
 
