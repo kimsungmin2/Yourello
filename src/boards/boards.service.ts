@@ -4,22 +4,31 @@ import { UpdateBoardDto } from './dto/update-board.dto';
 import { Board } from './entities/board.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import * as _ from 'lodash';
+import _ from 'lodash';
 import { InviteDto } from './dto/invite.dto';
+import { BoardMember } from './entities/boardmember.entity';
 
 @Injectable()
 export class BoardsService {
   constructor(
     @InjectRepository(Board)
     private boardRepository: Repository<Board>,
+    @InjectRepository(BoardMember)
+    private boardMemberRepository: Repository<BoardMember>,
   ) {}
-  async create(createBoardDto: CreateBoardDto) {
+  async create(userId: number, createBoardDto: CreateBoardDto) {
     const { title, backgroundcolor, explanation } = createBoardDto;
 
-    return await this.boardRepository.save({
+    const board = await this.boardRepository.save({
       title,
       backgroundcolor,
       explanation,
+    });
+
+    await this.boardMemberRepository.save({
+      boardId: board.id,
+      userId,
+      owner: true,
     });
   }
 

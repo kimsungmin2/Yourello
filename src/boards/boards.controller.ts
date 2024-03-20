@@ -1,19 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, UseGuards, Request } from '@nestjs/common';
 import { BoardsService } from './boards.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { InviteDto } from './dto/invite.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('Board')
+@UseGuards(AuthGuard('jwt'))
 @Controller('boards')
 export class BoardsController {
   constructor(private readonly boardsService: BoardsService) {}
 
   @ApiOperation({ summary: '보드 생성' })
   @Post()
-  async create(@Body() createBoardDto: CreateBoardDto) {
-    return this.boardsService.create(createBoardDto);
+  async create(@Request() req, @Body() createBoardDto: CreateBoardDto) {
+    const userId = req.user.id;
+    return this.boardsService.create(userId, createBoardDto);
   }
 
   @Get()
