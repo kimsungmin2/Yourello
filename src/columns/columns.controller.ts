@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Patch, Param, Delete, UseGuards, Get } from '@nestjs/common';
 import { ColumnsService } from './columns.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateColumnDto } from './dto/create-column.dto';
@@ -10,9 +10,16 @@ export class ColumnsController {
 
   //컬럼 생성
   @UseGuards(AuthGuard('jwt'))
-  @Post('')
+  @Post(':boardId')
   create(@Param('boardId') boardId: number, @Body('title') title: string) {
     return this.columnsService.create(boardId, title);
+  }
+
+  //컬럼 조회
+  @UseGuards(AuthGuard('jwt'))
+  @Get(':Id')
+  async getColumn(@Param('Id') Id: number) {
+    return await this.columnsService.getColumn(Id);
   }
 
   //컬럼 이름 수정

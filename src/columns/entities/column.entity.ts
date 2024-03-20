@@ -15,7 +15,7 @@ import {
 } from 'typeorm';
 
 @Entity({
-  name: 'column',
+  name: 'columns',
 })
 export class Columns {
   @PrimaryGeneratedColumn()
@@ -23,6 +23,12 @@ export class Columns {
 
   @Column({ type: 'varchar', nullable: false })
   title: string;
+
+  @Column({ default: 0 })
+  order: number;
+
+  @Column('int', { name: 'boardId', nullable: false })
+  boardId: number;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -32,12 +38,6 @@ export class Columns {
 
   @DeleteDateColumn()
   deletedAt: Date | null;
-
-  @Column({ default: 0 })
-  order: number;
-
-  @Column('int', { name: 'boardId', nullable: false })
-  boardId: number;
 
   @ManyToOne(() => Board, (board) => board.column)
   @JoinColumn([{ name: 'boardId', referencedColumnName: 'id' }])
