@@ -2,17 +2,12 @@ import { Strategy, ExtractJwt } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request as RequestType } from 'express';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-
 import _ from 'lodash';
-import { ConfigService } from '@nestjs/config';
 import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(
-    private readonly userService: UsersService,
-    private readonly configService: ConfigService,
-  ) {
+  constructor(private readonly userService: UsersService) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([JwtStrategy.extractJWT]),
       ignoreExpiration: false,
