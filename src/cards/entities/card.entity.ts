@@ -13,6 +13,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { CardWorker } from './cardworker.entity';
+import { CardList } from './cardList.entity';
 
 @Entity({
   name: 'card',
@@ -31,10 +32,13 @@ export class Card {
   color: string;
 
   @Column({ type: 'varchar', nullable: false })
-  deadLine: string;
+  deadLine: Date;
 
   @Column({ type: 'varchar', nullable: false })
   cardImage: string;
+
+  @Column({ type: 'int', nullable: false })
+  orderNum: number;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -48,9 +52,19 @@ export class Card {
   @Column('int', { name: 'columnId', nullable: false })
   columnId: number;
 
+  //   @Column('int', { name: 'userId', nullable: false })
+  //   userId: number;
+
   @ManyToOne(() => Columns, (column) => column.card)
   @JoinColumn([{ name: 'columnId', referencedColumnName: 'id' }])
   column: Columns;
+
+  //   @ManyToOne(() => User, (user) => user.card)
+  //   @JoinColumn([{ name: 'userId', referencedColumnName: 'id' }])
+  //   user: User;
+
+  @OneToMany((type) => CardList, (cardList) => cardList.card)
+  cardList: CardList[];
 
   @OneToMany((type) => Comment, (comment) => comment.card)
   comment: Comment[];
