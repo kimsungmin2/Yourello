@@ -74,7 +74,8 @@ export class BoardsController {
     const ownerUserId = req.user.id;
     await this.boardsService.invite(+ownerUserId, +boardId, email);
     await this.usersService.findByEmail(email);
-    await this.emailService.sendVerificationToEmail(email, boardId);
+    const board = await this.boardsService.findOne(+boardId);
+    await this.emailService.sendVerificationToEmail(email, boardId, board.title);
     res.send('보드 초대 메일을 발송했습니다.');
   }
 
