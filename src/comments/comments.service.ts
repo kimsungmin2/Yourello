@@ -14,8 +14,8 @@ export class CommentsService {
   ) {}
 
   /**댓글 조회*/
-  async getCommentByCardId(cardId: number) {
-    const comment = await this.commentRepository.findBy({ cardId: cardId });
+  async getAllComments(): Promise<Comment[]> {
+    const comment = await this.commentRepository.find();
 
     if (!comment) {
       throw new NotFoundException('댓글 조회 실패 (ㅠoㅠ). 확인해주세요!');
@@ -24,7 +24,18 @@ export class CommentsService {
     return comment;
   }
 
-  /** 댓글 생성*/
+  /**댓글 상세 조회*/
+  async getCommentById(cardId: number, id: number) {
+    const comment = await this.commentRepository.findOneBy({ cardId, id });
+
+    if (!comment) {
+      throw new NotFoundException('해당 댓글 조회 실패 (ㅠoㅠ). 확인해주세요!');
+    }
+
+    return comment;
+  }
+
+  /** 댓글 생성 */
   async createComment(userId: number, cardId: number, content: string) {
     return await this.commentRepository.save({ userId: userId, cardId: cardId, content });
   }
@@ -41,7 +52,7 @@ export class CommentsService {
     return await this.commentRepository.update({ id }, { content });
   }
 
-  /**댓글 삭제*/
+  /**댓글 삭제 */
   async deleteComment(id: number, userId: number) {
     const comment = await this.commentRepository.findOneBy({ id });
 

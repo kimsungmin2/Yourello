@@ -7,19 +7,25 @@ import { AuthGuard } from '@nestjs/passport';
 import { UserInfo } from 'src/utils/decorator/userInfo.decorator';
 import { User } from 'src/users/entities/user.entity';
 
-@UseGuards(AuthGuard('jwt'))
 @Controller('comments')
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
-  //댓글 조회
+  /**댓글 조회 */
   @Get('')
-  async getAllComments(@Param('cardId') cardId: number) {
-    return await this.commentsService.getCommentByCardId(cardId);
+  async getAllComments(): Promise<Comment[]> {
+    return await this.commentsService.getAllComments();
   }
 
-  //댓글 생성
+  /**댓글 상세 조회 */
+  @Get(':cardId/:id')
+  async getComment(@Param('cardId') cardId: number, @Param('id') id: number) {
+    return this.commentsService.getCommentById(cardId, id);
+  }
+
+  /**댓글 생성 */
   //@Role()
+  // @UseGuards(AuthGuard('jwt'))
   @Post('')
   // @UsePipes(ValidationPipe)
   async createComment(@UserInfo() user: User, @Param('cardId') cardId: number, @Body() createCommentDto: CreateCommentDto) {
@@ -28,7 +34,8 @@ export class CommentsController {
     return { message: '댓글 작성 성공 (^O^)' };
   }
 
-  // 댓글 수정
+  /**댓글 수정 */
+  // @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
   async updateComment(@UserInfo() user: User, @Param('id') id: number, @Body() updateCommentDto: UpdateCommentDto) {
     await this.commentsService.updateComment(id, user.id, updateCommentDto.content);
@@ -37,6 +44,7 @@ export class CommentsController {
   }
 
   // 댓글 삭제
+  // @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
   async deleteComment(@UserInfo() user: User, @Param('id') id: number) {
     await this.commentsService.deleteComment(id, user.id);
