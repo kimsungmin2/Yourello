@@ -13,14 +13,14 @@ export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
   //댓글 조회
-  @Get(':cardId')
+  @Get('')
   async getAllComments(@Param('cardId') cardId: number) {
     return await this.commentsService.getCommentByCardId(cardId);
   }
 
   //댓글 생성
   //@Role()
-  @Post(':cardId')
+  @Post('')
   // @UsePipes(ValidationPipe)
   async createComment(@UserInfo() user: User, @Param('cardId') cardId: number, @Body() createCommentDto: CreateCommentDto) {
     await this.commentsService.createComment(cardId, user.id, createCommentDto.content);
