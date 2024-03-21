@@ -17,6 +17,13 @@ export class ColumnsController {
 
   //컬럼 조회
   @UseGuards(AuthGuard('jwt'))
+  @Get()
+  async getColumns() {
+    return await this.columnsService.getColumns();
+  }
+
+  //컬럼 상세 조회
+  @UseGuards(AuthGuard('jwt'))
   @Get(':Id')
   async getColumn(@Param('Id') Id: number) {
     return await this.columnsService.getColumn(Id);

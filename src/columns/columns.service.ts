@@ -26,7 +26,16 @@ export class ColumnsService {
   }
 
   //컬럼 조회
-  async getColumn(id: number) {
+  async getColumns(): Promise<Columns[]> {
+    const columns = await this.columnsRepository.find({ order: { order: 'ASC' } });
+    if (!columns) {
+      throw new NotFoundException('컬럼을 찾을 수 없습니다.');
+    }
+    return columns;
+  }
+
+  //컬럼 상세 조회
+  async getColumn(id: number): Promise<Columns> {
     const columns = await this.columnsRepository.findOne({ where: { id } });
     if (!columns) {
       throw new NotFoundException('컬럼을 찾을 수 없습니다.');
