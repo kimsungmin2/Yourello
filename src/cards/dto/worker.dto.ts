@@ -8,5 +8,5 @@ export class WorkerDto {
     description: '작업자',
   })
   @IsNotEmpty({ message: '작업자를 입력해주세요.' })
-  worker: number;
+  workerId: number;
 }

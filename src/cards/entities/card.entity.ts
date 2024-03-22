@@ -1,6 +1,5 @@
-import { Columns } from 'src/columns/entities/column.entity';
-import { Comment } from 'src/comments/entities/comment.entity';
-import { User } from 'src/users/entities/user.entity';
+import { Columns } from '../../columns/entities/column.entity';
+import { Comment } from '../../comments/entities/comment.entity';
 import {
   Column,
   CreateDateColumn,
@@ -55,9 +54,9 @@ export class Card {
   //   @Column('int', { name: 'userId', nullable: false })
   //   userId: number;
 
-  @ManyToOne(() => Columns, (column) => column.card)
+  @ManyToOne(() => Columns, (columns) => columns.card)
   @JoinColumn([{ name: 'columnId', referencedColumnName: 'id' }])
-  column: Columns;
+  columns: Columns;
 
   //   @ManyToOne(() => User, (user) => user.card)
   //   @JoinColumn([{ name: 'userId', referencedColumnName: 'id' }])

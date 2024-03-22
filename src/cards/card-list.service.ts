@@ -18,10 +18,12 @@ export class CardListService {
     if (!card) {
       throw new NotAcceptableException('존재하지 않는 카드입니다.');
     }
+    console.log(card);
     const checkId = await this.cardListRepository.save({
       cardId,
       cardContent,
     });
+    console.log(checkId);
     return checkId;
   }
 
@@ -42,18 +44,19 @@ export class CardListService {
     const completeCheck = checkList.filter((item) => item.checking).length;
 
     const checkListPercentage = checkList.length > 0 ? (completeCheck / checkList.length) * 100 : 0;
-    return checkListPercentage;
+    return { checkList, checkListPercentage };
   }
 
-  async deleteCheckList(cardListId: number) {
+  async deleteCheckList(cardId: number, cardListId: number) {
     const checklist = await this.cardListRepository.findOneBy({ id: cardListId });
     if (!checklist) {
       throw new NotAcceptableException('존재하지 않는 카드리스트입니다.');
     }
-    const card = await this.cardRepository.findOneBy({ id: checklist.cardId });
+    const card = await this.cardRepository.findOneBy({ id: cardId });
     if (!card) {
       throw new NotAcceptableException('존재하지 않는 카드입니다.');
     }
+    console.log(card);
     return await this.cardListRepository.delete({ id: cardListId });
   }
 }

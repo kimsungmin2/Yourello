@@ -9,6 +9,7 @@ import { CardWorker } from './entities/cardworker.entity';
 import { CardList } from './entities/cardList.entity';
 import { AwsService } from 'src/aws/aws.service';
 import { CardListService } from './card-list.service';
+import { User } from 'src/users/entities/user.entity';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { CardListService } from './card-list.service';
       }),
       inject: [ConfigService],
     }),
-    TypeOrmModule.forFeature([Card, CardWorker, CardList]),
+    TypeOrmModule.forFeature([Card, CardWorker, CardList, User]),
   ],
   controllers: [CardsController],
   providers: [CardsService, AwsService, CardListService],

@@ -1,7 +1,5 @@
-import { Board } from 'src/boards/entities/board.entity';
-import { Card } from 'src/cards/entities/card.entity';
-import { Comment } from 'src/comments/entities/comment.entity';
-import { User } from 'src/users/entities/user.entity';
+import { Board } from '../../boards/entities/board.entity';
+import { Card } from '../../cards/entities/card.entity';
 import {
   Column,
   CreateDateColumn,
@@ -15,7 +13,7 @@ import {
 } from 'typeorm';
 
 @Entity({
-  name: 'column',
+  name: 'columns',
 })
 export class Columns {
   @PrimaryGeneratedColumn()
@@ -40,6 +38,6 @@ export class Columns {
   @JoinColumn([{ name: 'boardId', referencedColumnName: 'id' }])
   board: Board;
 
-  @OneToMany((type) => Card, (card) => card.column)
+  @OneToMany((type) => Card, (card) => card.columns)
   card: Card[];
 }
