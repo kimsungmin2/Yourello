@@ -36,8 +36,8 @@ export class CommentsService {
   }
 
   /** 댓글 생성 */
-  async createComment(userId: number, cardId: number, content: string) {
-    return await this.commentRepository.save({ userId: userId, cardId: cardId, content });
+  async createComment(cardId: number, content: string) {
+    return await this.commentRepository.save({ cardId: cardId, content });
   }
 
   /**댓글 수정 */

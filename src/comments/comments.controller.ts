@@ -12,24 +12,24 @@ export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
   /**댓글 조회 */
-  @Get('')
+  @Get()
   async getAllComments(): Promise<Comment[]> {
     return await this.commentsService.getAllComments();
   }
 
   /**댓글 상세 조회 */
   @Get(':cardId/:id')
-  async getComment(@Param('cardId') cardId: number, @Param('id') id: number) {
+  async getComment(@Query('cardId') cardId: number, @Param('id') id: number) {
     return this.commentsService.getCommentById(cardId, id);
   }
 
   /**댓글 생성 */
   //@Role()
-  // @UseGuards(AuthGuard('jwt'))
-  @Post('')
+  @UseGuards(AuthGuard('jwt'))
+  @Post()
   // @UsePipes(ValidationPipe)
-  async createComment(@UserInfo() user: User, @Param('cardId') cardId: number, @Body() createCommentDto: CreateCommentDto) {
-    await this.commentsService.createComment(cardId, user.id, createCommentDto.content);
+  async createComment(@Query('cardId') cardId: number, @Body() createCommentDto: CreateCommentDto) {
+    await this.commentsService.createComment(cardId, createCommentDto.content);
 
     return { message: '댓글 작성 성공 (^O^)' };
   }
@@ -37,8 +37,8 @@ export class CommentsController {
   /**댓글 수정 */
   // @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
-  async updateComment(@UserInfo() user: User, @Param('id') id: number, @Body() updateCommentDto: UpdateCommentDto) {
-    await this.commentsService.updateComment(id, user.id, updateCommentDto.content);
+  async updateComment(/**@UserInfo() user: User,*/ @Param('id') id: number, @Body() updateCommentDto: UpdateCommentDto) {
+    // await this.commentsService.updateComment(id, user.id, updateCommentDto.content);
 
     return { message: '댓글 수정 성공 (^O^)' };
   }
@@ -46,8 +46,8 @@ export class CommentsController {
   // 댓글 삭제
   // @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
-  async deleteComment(@UserInfo() user: User, @Param('id') id: number) {
-    await this.commentsService.deleteComment(id, user.id);
+  async deleteComment(/**@UserInfo() user: User,*/ @Param('id') id: number) {
+    // await this.commentsService.deleteComment(id, user.id);
 
     return { message: '댓글 삭제 성공 (^O^)' };
   }
