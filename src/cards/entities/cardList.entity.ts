@@ -10,7 +10,6 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Card } from './card.entity';
-import { User } from 'src/users/entities/user.entity';
 
 @Entity({
   name: 'cardList',
@@ -28,7 +27,7 @@ export class CardList {
   @Column('int', { name: 'cardId', nullable: false })
   cardId: number;
 
-  @ManyToOne(() => Card, (card) => card.cardList)
+  @ManyToOne(() => Card, (card) => card.cardList, { onDelete: 'CASCADE' })
   @JoinColumn([{ name: 'cardId', referencedColumnName: 'id' }])
   card: Card;
 

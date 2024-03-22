@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
-export class CheckList {
-  @IsNumber()
+export class CheckListDto {
+  @IsString()
   @ApiProperty({
     example: '아오 아오 아오',
     description: '카드 체크리스트 내용',

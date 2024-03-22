@@ -22,6 +22,9 @@ import { AwsModule } from './aws/aws.module';
 import { CardList } from './cards/entities/cardList.entity';
 import { CardListService } from './cards/card-list.service';
 import { AuthModule } from './auth/auth.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { EventModule } from './event/event.module';
 
 const typeOrmModuleOptions = {
   useFactory: async (configService: ConfigService): Promise<TypeOrmModuleOptions> => ({
@@ -60,6 +63,10 @@ const typeOrmModuleOptions = {
     CommentsModule,
     AwsModule,
     AuthModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'client/build'),
+    }),
+    EventModule,
   ],
   controllers: [AppController],
   providers: [AppService],
