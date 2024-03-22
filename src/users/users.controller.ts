@@ -8,7 +8,6 @@ import { SignUpDto } from './dto/sign.dto';
 import { LoginDto } from './dto/login.dto';
 import { UpdateDto } from './dto/update.dto';
 import { DeleteDto } from './dto/delete.dto';
-import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('User')
 @Controller('users')
@@ -46,7 +45,7 @@ export class UsersController {
   }
 
   @ApiOperation({ summary: '유저 정보' })
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @Get('')
   getUser(@UserInfo() user: User) {
     return { 이름: user.name, 자기소개: user.introduce };

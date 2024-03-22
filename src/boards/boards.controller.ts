@@ -10,7 +10,6 @@ import { BoardGuard } from './utils/guard/boards.guard';
 import { EmailService } from 'src/email/email.service';
 
 @ApiTags('Board')
-@UseGuards(AuthGuard('jwt'))
 @Controller('boards')
 export class BoardsController {
   constructor(
@@ -19,6 +18,7 @@ export class BoardsController {
     private readonly emailService: EmailService,
   ) {}
 
+  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: '보드 생성' })
   @Post()
   async create(@Request() req, @Body() createBoardDto: CreateBoardDto, @Res() res) {
@@ -27,6 +27,7 @@ export class BoardsController {
     res.send('보드가 생성되었습니다.');
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: '보드 전체 조회' })
   @Get()
   async findAll(@Request() req) {
@@ -34,6 +35,7 @@ export class BoardsController {
     return this.boardsService.findAll(userId);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @UseGuards(BoardGuard)
   @ApiOperation({ summary: '보드 상세 조회' })
   @Get(':boardId')
@@ -41,6 +43,7 @@ export class BoardsController {
     return await this.boardsService.findOne(+id);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @UseGuards(BoardGuard)
   @ApiOperation({ summary: '보드 멤버 조회' })
   @Get('/member/:boardId')
@@ -48,6 +51,7 @@ export class BoardsController {
     return await this.boardsService.getBoardMember(+id);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @UseGuards(BoardGuard)
   @ApiOperation({ summary: '보드 수정' })
   @Patch(':boardId')
@@ -58,6 +62,7 @@ export class BoardsController {
     res.send('보드가 수정되었습니다.');
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @UseGuards(BoardGuard)
   @ApiOperation({ summary: '보드 삭제' })
   @Delete(':boardId')
@@ -67,6 +72,7 @@ export class BoardsController {
     res.send('보드가 삭제되었습니다.');
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @UseGuards(BoardGuard)
   @ApiOperation({ summary: '보드 초대' })
   @Post('invite/:boardId')
