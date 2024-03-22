@@ -1,34 +1,54 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { CommentsService } from './comments.service';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ValidationPipe, UsePipes, Query, UseGuards } from '@nestjs/common';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
+import { Comment } from './entities/comment.entity';
+import { CommentsService } from './comments.service';
+import { AuthGuard } from '@nestjs/passport';
+import { UserInfo } from 'src/utils/decorator/userInfo.decorator';
+import { User } from 'src/users/entities/user.entity';
 
 @Controller('comments')
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
-  @Post()
-  create(@Body() createCommentDto: CreateCommentDto) {
-    return this.commentsService.create(createCommentDto);
-  }
-
+  /**댓글 조회 */
   @Get()
-  findAll() {
-    return this.commentsService.findAll();
+  async getAllComments(): Promise<Comment[]> {
+    return await this.commentsService.getAllComments();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.commentsService.findOne(+id);
+  /**댓글 상세 조회 */
+  @Get(':cardId/:id')
+  async getComment(@Query('cardId') cardId: number, @Param('id') id: number) {
+    return this.commentsService.getCommentById(cardId, id);
   }
 
+  /**댓글 생성 */
+  //@Role()
+  @UseGuards(AuthGuard('jwt'))
+  @Post()
+  // @UsePipes(ValidationPipe)
+  async createComment(@Query('cardId') cardId: number, @Body() createCommentDto: CreateCommentDto) {
+    await this.commentsService.createComment(cardId, createCommentDto.content);
+
+    return { message: '댓글 작성 성공 (^O^)' };
+  }
+
+  /**댓글 수정 */
+  // @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCommentDto: UpdateCommentDto) {
-    return this.commentsService.update(+id, updateCommentDto);
+  async updateComment(/**@UserInfo() user: User,*/ @Param('id') id: number, @Body() updateCommentDto: UpdateCommentDto) {
+    // await this.commentsService.updateComment(id, user.id, updateCommentDto.content);
+
+    return { message: '댓글 수정 성공 (^O^)' };
   }
 
+  // 댓글 삭제
+  // @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.commentsService.remove(+id);
+  async deleteComment(/**@UserInfo() user: User,*/ @Param('id') id: number) {
+    // await this.commentsService.deleteComment(id, user.id);
+
+    return { message: '댓글 삭제 성공 (^O^)' };
   }
 }

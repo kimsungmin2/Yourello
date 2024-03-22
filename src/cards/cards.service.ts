@@ -1,14 +1,15 @@
-import { ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { Card } from './entities/card.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, LessThan, MoreThan, Repository } from 'typeorm';
-import { AwsService } from 'src/aws/aws.service';
-import { BoardMember } from 'src/boards/entities/boardmember.entity';
-import { Columns } from 'src/columns/entities/column.entity';
+import { DataSource, FindOptionsWhere, LessThan, MoreThan, Repository } from 'typeorm';
+import { AwsService } from '../aws/aws.service';
+import { BoardMember } from '../boards/entities/boardmember.entity';
+import { Columns } from '../columns/entities/column.entity';
 import { CardWorker } from './entities/cardworker.entity';
 import { WorkerDto } from './dto/worker.dto';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class CardsService {
@@ -17,10 +18,15 @@ export class CardsService {
     private cardRepository: Repository<Card>,
     @InjectRepository(CardWorker)
     private cardWorkerRepository: Repository<CardWorker>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
     private dataSource: DataSource,
     private awsService: AwsService,
   ) {}
-
+  // const user = await queryRunner.manager.getRepository(BoardMember).findOneBy({ id: column.boardId });
+  // if (user.userId !== userId) {
+  //   throw new ForbiddenException('카드를 만들 권한이 없습니다.');
+  // }
   async createCard(
     userId: number,
     columnId: number,
@@ -35,14 +41,12 @@ export class CardsService {
     await queryRunner.startTransaction();
     try {
       const column = await queryRunner.manager.getRepository(Columns).findOneBy({ id: columnId });
-      const user = await queryRunner.manager.getRepository(BoardMember).findOneBy({ id: column.boardId });
-      if (user.userId !== userId) {
-        throw new ForbiddenException('카드를 만들 권한이 없습니다.');
-      }
+      console.log(column);
+
       const imageName = this.awsService.getUUID();
       const ext = file.originalname.split('.').pop();
       const imageUrl = await this.awsService.imageUploadToS3(`${imageName}.${ext}`, file, ext);
-
+      console.log(imageUrl);
       const maxCardOrderNum = await queryRunner.manager
         .getRepository(Card)
         .createQueryBuilder('card')
@@ -50,8 +54,8 @@ export class CardsService {
         .where('card.columnId = :id', { id: columnId })
         .getRawOne();
 
-      const OrderNum = maxCardOrderNum.max ? maxCardOrderNum.max + 1 : 1;
-
+      const orderNum = maxCardOrderNum.max ? maxCardOrderNum.max + 1 : 1;
+      console.log(orderNum);
       const card = await queryRunner.manager.getRepository(Card).save({
         columnId,
         title,
@@ -59,16 +63,19 @@ export class CardsService {
         color,
         deadLine,
         cardImage: imageUrl,
-        orderNum: OrderNum,
+        orderNum: orderNum,
       });
 
-      await queryRunner.manager.getRepository(CardWorker).save({
+      const user = await queryRunner.manager.getRepository(CardWorker).save({
         ownerId: userId,
         cardId: card.id,
       });
+      await queryRunner.commitTransaction();
+      console.log(user);
       return card;
     } catch (error) {
       await queryRunner.rollbackTransaction();
+      throw new Error('Database Error');
     } finally {
       await queryRunner.release();
     }
@@ -141,23 +148,37 @@ export class CardsService {
   }
 
   async getCardList(columnId: number): Promise<Card[]> {
-    const card = await this.dataSource
-      .getRepository(Card)
-      .createQueryBuilder('card')
-      .where('card.columnId = :columnId', { columnId })
-      .orderBy('card.orderNum', 'ASC')
-      .getMany();
+    const card = await this.cardRepository.find({
+      where: { columnId },
+      order: {
+        orderNum: 'ASC',
+      },
+    });
+
     return card;
   }
 
-  async updateWorkerCard(cardId: number, userId: number, worker: number) {
+  async getWorkerById(workerId: number) {
+    const worker = await this.cardWorkerRepository.findOneBy({ workerId });
+    if (!worker) {
+      throw new UnauthorizedException('인증 되지 않은 사용자입니다');
+    }
+    return worker;
+  }
+
+  async updateWorkerCard(cardId: number, userId: number, workerId: number) {
     await this.getCardById(cardId);
+
     const cardWorker = await this.cardWorkerRepository.findOneBy({ cardId });
     if (cardWorker.ownerId !== userId) {
       throw new ForbiddenException('변경 권환이 없습니다.');
     }
+    const user = await this.userRepository.findOneBy({ id: workerId });
+    if (!user) {
+      throw new NotFoundException('작업을 할당할 유저가 존재하지 않습니다.');
+    }
 
-    const workerUpdate = await this.cardWorkerRepository.update(cardWorker.id, { worker });
+    const workerUpdate = await this.cardWorkerRepository.update(cardWorker.id, { workerId });
     return workerUpdate;
   }
 
@@ -179,6 +200,7 @@ export class CardsService {
         deadLine: updateCardDto.deadLine,
         cardImage: imageUrl,
       });
+      await queryRunner.commitTransaction();
     } catch (error) {
       await queryRunner.rollbackTransaction();
     } finally {
@@ -201,8 +223,25 @@ export class CardsService {
       if (column.boardId !== NewColumn.boardId) {
         throw new ForbiddenException('같은 보드에서만 이동이 가능합니다.');
       }
+      await queryRunner.manager
+        .getRepository(Card)
+        .createQueryBuilder('card')
+        .update(Card)
+        .set({ orderNum: () => 'orderNum - 1' })
+        .where('orderNum > :orderNum', { orderNum: card.orderNum })
+        .execute();
+      //MoreThan 보다 이게 더 쉬움
+      const maxCardOrderNum = await queryRunner.manager
+        .getRepository(Card)
+        .createQueryBuilder('card')
+        .select('MAX(card.orderNum)', 'max')
+        .where('card.columnId = :id', { id: columnId })
+        .getRawOne();
 
-      await this.cardRepository.update(cardId, { columnId: columnId });
+      const orderNum = maxCardOrderNum.max ? maxCardOrderNum.max + 1 : 1;
+
+      await this.cardRepository.update(cardId, { columnId: columnId, orderNum: orderNum });
+      await queryRunner.commitTransaction();
     } catch (error) {
       await queryRunner.rollbackTransaction();
     } finally {
@@ -210,26 +249,59 @@ export class CardsService {
     }
   }
 
-  async deleteCard(cardId: number, userId: number): Promise<void> {
-    await this.getCardById(cardId);
-    await this.checkCardOwner(cardId, userId);
-
+  async deleteCard(cardId: number, userId: number) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
     try {
-      await this.cardRepository.delete({ id: cardId });
+      const card = await this.getCardById(cardId);
+      await this.checkCardOwner(cardId, userId);
+      console.log('1124');
+      await queryRunner.manager
+        .getRepository(Card)
+        .createQueryBuilder('card')
+        .update(Card)
+        .set({ orderNum: () => 'orderNum - 1' })
+        .where('orderNum > :orderNum', { orderNum: card.orderNum })
+        .execute();
+      console.log('1124');
+      await queryRunner.manager.getRepository(Card).delete({ id: cardId });
+      console.log('1124');
+
+      await queryRunner.commitTransaction();
+      return;
     } catch (error) {
-      throw new InternalServerErrorException('카드 삭제 중 오류가 발생했습니다.');
+      await queryRunner.rollbackTransaction();
+    } finally {
+      await queryRunner.release();
     }
   }
-  //보드에서 컬럼 생성 혼자 해봄 걍 다 보드로 보면 됨
-  async createBoardOrder(boardId: number) {
-    const lastCard = await this.cardRepository.findOne({
-      order: { orderNum: 'DESC' },
-    });
-    const cardOrderNum = lastCard ? lastCard.orderNum + 1024 : 1024;
-    const newCard = await this.cardRepository.save({
-      columnId: boardId,
-      orderNum: cardOrderNum,
-    });
-    return newCard;
+
+  async getWorker(cardId: number, userId: number) {
+    const whereCondition: FindOptionsWhere<any> = [
+      { cardId: cardId, workerId: userId },
+      { cardId: cardId, ownerId: userId },
+    ];
+
+    const workers = await this.cardWorkerRepository.find({ where: whereCondition });
+
+    if (workers.length === 0) {
+      throw new UnauthorizedException('작업자 인증을 받지 못했습니다.');
+    }
+
+    return workers;
   }
+
+  //보드에서 컬럼 생성 혼자 해봄 걍 다 보드로 보면 됨
+  // async createBoardOrder(boardId: number) {
+  //   const lastCard = await this.cardRepository.findOne({
+  //     order: { orderNum: 'DESC' },
+  //   });
+  //   const cardOrderNum = lastCard ? lastCard.orderNum + 1024 : 1024;
+  //   const newCard = await this.cardRepository.save({
+  //     columnId: boardId,
+  //     orderNum: cardOrderNum,
+  //   });
+  //   return newCard;
+  // }
 }

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsDate, IsDateString, IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateCardDto {
   @IsString()
@@ -26,7 +26,7 @@ export class CreateCardDto {
   @IsNotEmpty({ message: '카드 색상을 입력해주세요.' })
   color: string;
 
-  @IsDate()
+  @IsDateString()
   @ApiProperty({
     example: '2024-03-20T20:00:00',
     description: '카드 만료일',

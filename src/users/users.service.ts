@@ -16,8 +16,8 @@ export class UsersService {
   ) {}
 
   async signUp(email: string, password: string, name: string, introduce: string, passwordConfirm: string) {
-    const existingUser = await this.findByEmail(email);
-    if (existingUser) {
+    const user = await this.userRepository.findOne({ where: { email } });
+    if (user) {
       throw new ConflictException('이미 해당 이메일로 가입된 사용자가 있습니다!');
     }
     if (password !== passwordConfirm) {
@@ -25,20 +25,21 @@ export class UsersService {
     }
 
     const hashedPassword = await hash(password, 10);
-    const user = await this.userRepository.save({
+    await this.userRepository.save({
       email,
       password: hashedPassword,
       name,
       introduce,
     });
-
-    return user;
   }
 
-  async adminSignUp(email: string, password: string, name: string) {
+  async adminSignUp(email: string, password: string, name: string, passwordConfirm: string) {
     const existingUser = await this.findByEmail(email);
     if (existingUser) {
       throw new ConflictException('이미 해당 이메일로 가입된 사용자가 있습니다!');
+    }
+    if (password !== passwordConfirm) {
+      throw new UnauthorizedException('비밀번호가 체크비밀번호와 일치하지 않습니다.');
     }
 
     const hashedPassword = await hash(password, 10);
@@ -88,10 +89,6 @@ export class UsersService {
       throw new NotFoundException('사용자를 찾을 수 없습니다.');
     }
 
-    if (!(await compare(password, user.password))) {
-      throw new ForbiddenException('비밀번호가 일치하지 않습니다.');
-    }
-
     return this.userRepository.update(id, { name, introduce });
   }
 
@@ -99,10 +96,6 @@ export class UsersService {
     const user = await this.userRepository.findOneBy({ id });
     if (!user) {
       throw new NotFoundException('사용자를 찾을 수 없습니다.');
-    }
-
-    if (!(await compare(password, user.password))) {
-      throw new ForbiddenException('비밀번호가 일치하지 않습니다.');
     }
 
     return this.userRepository.delete(id);

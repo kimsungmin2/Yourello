@@ -24,6 +24,9 @@ import { CardListService } from './cards/card-list.service';
 import { AuthModule } from './auth/auth.module';
 import { EmailService } from './email/email.service';
 import { EmailModule } from './email/email.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { EventModule } from './event/event.module';
 
 const typeOrmModuleOptions = {
   useFactory: async (configService: ConfigService): Promise<TypeOrmModuleOptions> => ({
@@ -63,6 +66,10 @@ const typeOrmModuleOptions = {
     AwsModule,
     AuthModule,
     EmailModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'client/build'),
+    }),
+    EventModule,
   ],
   controllers: [AppController],
   providers: [AppService, EmailService],
