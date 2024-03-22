@@ -1,7 +1,7 @@
 import { Board } from 'src/boards/entities/board.entity';
 import { Card } from 'src/cards/entities/card.entity';
-import { Comment } from 'src/comments/entities/comment.entity';
-import { User } from 'src/users/entities/user.entity';
+// import { Comment } from 'src/comments/entities/comment.entity';
+// import { User } from 'src/users/entities/user.entity';
 import {
   Column,
   CreateDateColumn,

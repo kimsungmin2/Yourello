@@ -2,8 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Columns } from './entities/column.entity';
-import { CreateColumnDto } from './dto/create-column.dto';
-import { UpdateColumnDto } from './dto/update-column.dto';
+// import { CreateColumnDto } from './dto/create-column.dto';
+// import { UpdateColumnDto } from './dto/update-column.dto';
 import { Board } from 'src/boards/entities/board.entity';
 
 @Injectable()
