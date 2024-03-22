@@ -11,8 +11,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Role } from '../../users/types/userRole.type';
-import { User } from 'src/users/entities/user.entity';
-import { Card } from 'src/cards/entities/card.entity';
+import { User } from '../../users/entities/user.entity';
+import { Card } from '../../cards/entities/card.entity';
 
 @Entity({
   name: 'comment',

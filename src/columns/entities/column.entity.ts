@@ -2,6 +2,7 @@ import { Board } from 'src/boards/entities/board.entity';
 import { Card } from 'src/cards/entities/card.entity';
 // import { Comment } from 'src/comments/entities/comment.entity';
 // import { User } from 'src/users/entities/user.entity';
+
 import {
   Column,
   CreateDateColumn,
@@ -43,6 +44,6 @@ export class Columns {
   @JoinColumn([{ name: 'boardId', referencedColumnName: 'id' }])
   board: Board;
 
-  @OneToMany((type) => Card, (card) => card.column)
+  @OneToMany((type) => Card, (card) => card.columns)
   card: Card[];
 }

@@ -12,6 +12,7 @@ import {
   UseGuards,
   Put,
   NotAcceptableException,
+  HttpCode,
 } from '@nestjs/common';
 import { CardsService } from './cards.service';
 import { CreateCardDto } from './dto/create-card.dto';
@@ -23,10 +24,12 @@ import { WorkerDto } from './dto/worker.dto';
 import { ColumnDto } from './dto/column.dto';
 import { OrderDto } from './dto/updateOrder.dto';
 import { CardListService } from './card-list.service';
-import { CheckList } from './dto/checkList.dto';
+import { CheckListDto } from './dto/checkList.dto';
+import { WorkerGuard } from 'src/utils/guard/worker.guard';
 
 @ApiTags('Card')
 @Controller('cards')
+@UseGuards(AuthGuard('jwt'))
 export class CardsController {
   constructor(
     private readonly cardsService: CardsService,
@@ -46,31 +49,6 @@ export class CardsController {
   async getCardList(@Param('columnId') columnId: number, @Req() req) {
     const user = req.user;
     return await this.cardsService.getCardList(columnId);
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @ApiOperation({ summary: '카드 리스트 조회' })
-  @Get(':cardId/checkList')
-  async getCheckList(@Param('cardId') cardId: number) {
-    return await this.cardListService.getCheckList(cardId);
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @ApiOperation({ summary: '카드 리스트 생성' })
-  @Post(':cardId/checkList')
-  async createCheckList(@Param('cardId') cardId: number, @Body() checkList: CheckList) {
-    return await this.cardListService.checkList(cardId, checkList.content);
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @ApiOperation({ summary: '카드 리스트 생성' })
-  @Post(':cardId/checkList/:cardCheckListid')
-  async checKignList(@Param('cardCheckListid') cardId: number, cardCheckListid: number) {
-    const card = await this.cardsService.getCardById(cardId);
-    if (!card) {
-      throw new NotAcceptableException('카드가 존재하지 않습니다.');
-    }
-    return await this.cardListService.checkListUpdate(cardCheckListid);
   }
 
   @ApiConsumes('multipart/form-data')
@@ -95,15 +73,16 @@ export class CardsController {
       createCardDto.deadLine,
       file,
     );
+    console.log(card);
     return card;
   }
 
   @ApiOperation({ summary: '작업자 변경' })
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(WorkerGuard)
   @Patch('worker/:cardId')
   async updateWorkerCard(@Param('cardId') cardId: number, @Body() workerDto: WorkerDto, @Req() req) {
     const user = req.user;
-    const card = await this.cardsService.updateWorkerCard(cardId, user.id, workerDto.worker);
+    const card = await this.cardsService.updateWorkerCard(cardId, user.id, workerDto.workerId);
     return card;
   }
   @ApiOperation({ summary: '카드 순서 변경' })
@@ -117,7 +96,7 @@ export class CardsController {
 
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: '카드 변경' })
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(WorkerGuard)
   @UseInterceptors(FileInterceptor('cardImage'))
   @Put(':cardId')
   async updateCard(
@@ -132,7 +111,7 @@ export class CardsController {
   }
 
   @ApiOperation({ summary: '카드 컬럼 변경' })
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(WorkerGuard)
   @Patch('column/:cardId')
   async updatedColumn(@Param('cardId') cardId: number, @Body() columnDto: ColumnDto, @Req() req) {
     const user = req.user;
@@ -141,18 +120,46 @@ export class CardsController {
   }
 
   @ApiOperation({ summary: '카드 삭제' })
-  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(204)
+  @UseGuards(WorkerGuard)
   @Delete(':cardId')
   async deleteCard(@Param('cardId') cardId: number, @Req() req) {
     const user = req.user;
     await this.cardsService.deleteCard(cardId, user.id);
   }
 
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: '카드 체크 리스트 조회' })
+  @Get(':cardId/checkList')
+  async getCheckList(@Param('cardId') cardId: number) {
+    return await this.cardListService.getCheckList(cardId);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: '카드 체크 리스트 생성' })
+  @Post(':cardId/checkList')
+  async createCheckList(@Param('cardId') cardId: number, @Body() checkListDto: CheckListDto) {
+    const checkLists = await this.cardListService.checkList(cardId, checkListDto.content);
+    return checkLists;
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: '카드 체크 리스트 체킹' })
+  @Patch(':cardId/checkList/:carListId')
+  async checkList(@Param('cardId') cardId: number, @Param('carListId') carListId: number) {
+    const card = await this.cardsService.getCardById(cardId);
+    if (!card) {
+      throw new NotAcceptableException('카드가 존재하지 않습니다.');
+    }
+    return await this.cardListService.checkListUpdate(carListId);
+  }
+
   @ApiOperation({ summary: '카드 리스트 삭제' })
   @UseGuards(AuthGuard('jwt'))
-  @Delete(':cardListId')
-  async deleteCardList(@Param('cardListId') cardListId: number, @Req() req) {
+  @HttpCode(204)
+  @Delete(':cardId/checkList/:cardListId')
+  async deleteCardList(@Param('cardId') cardId: number, @Param('cardListId') cardListId: number, @Req() req) {
     const user = req.user;
-    return await this.cardListService.deleteCheckList(cardListId);
+    return await this.cardListService.deleteCheckList(cardId, cardListId);
   }
 }

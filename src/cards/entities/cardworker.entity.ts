@@ -1,6 +1,3 @@
-import { BoardMember } from 'src/boards/entities/boardmember.entity';
-import { Columns } from 'src/columns/entities/column.entity';
-import { Comment } from 'src/comments/entities/comment.entity';
 import {
   Column,
   CreateDateColumn,
@@ -13,7 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Card } from './card.entity';
-import { User } from 'src/users/entities/user.entity';
+import { User } from '../../users/entities/user.entity';
 
 @Entity({
   name: 'cardWorker',
@@ -37,14 +34,18 @@ export class CardWorker {
   @Column('int', { name: 'cardId', nullable: false })
   cardId: number;
 
-  @ManyToOne(() => Card, (card) => card.cardWorker)
+  @ManyToOne(() => Card, (card) => card.cardWorker, { onDelete: 'CASCADE' })
   @JoinColumn([{ name: 'cardId', referencedColumnName: 'id' }])
   card: Card;
 
-  @ManyToOne(() => User, (user) => user.cardWorker)
+  @ManyToOne(() => User, (user) => user.cardWorker, { onDelete: 'CASCADE' })
   @JoinColumn([{ name: 'ownerId', referencedColumnName: 'id' }])
   user: User;
 
   @Column({ type: 'int', nullable: false })
-  worker: number;
+  workerId: number;
+
+  @ManyToOne(() => User, (worker) => worker.worker, { onDelete: 'CASCADE' })
+  @JoinColumn([{ name: 'workerId', referencedColumnName: 'id' }])
+  worker: User;
 }

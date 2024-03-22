@@ -38,7 +38,7 @@ async function bootstrap() {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  const port = process.env.PORT || 3030;
+  const port = process.env.PORT || 3000;
   await app.listen(port);
   console.log(`listening on port ${port}`);
 

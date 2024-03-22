@@ -30,7 +30,7 @@ export class UsersController {
   @ApiOperation({ summary: '운영자 회원가입' })
   @Post('admin/sign-up')
   async adminSignUp(@Body() signUpdto: SignUpDto) {
-    const user = await this.usersService.adminSignUp(signUpdto.email, signUpdto.password, signUpdto.name);
+    const user = await this.usersService.adminSignUp(signUpdto.email, signUpdto.password, signUpdto.name, signUpdto.passwordConfirm);
     return user;
   }
 
