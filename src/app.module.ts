@@ -22,6 +22,7 @@ import { AwsModule } from './aws/aws.module';
 import { CardList } from './cards/entities/cardList.entity';
 import { CardListService } from './cards/card-list.service';
 import { AuthModule } from './auth/auth.module';
+import { EmailModule } from './email/email.module';
 
 const typeOrmModuleOptions = {
   useFactory: async (configService: ConfigService): Promise<TypeOrmModuleOptions> => ({
@@ -60,6 +61,7 @@ const typeOrmModuleOptions = {
     CommentsModule,
     AwsModule,
     AuthModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [AppService],

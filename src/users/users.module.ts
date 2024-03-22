@@ -18,6 +18,6 @@ import { UsersService } from './users.service';
   ],
   providers: [UsersService, JwtService],
   controllers: [UsersController],
-  exports: [UsersService],
+  exports: [TypeOrmModule,UsersService],
 })
 export class UsersModule {}

@@ -30,6 +30,12 @@ export class BoardMember {
   @Column({ type: 'boolean', nullable: false, default: false })
   owner: boolean;
 
+  @Column( 'varchar', { name: 'token',  nullable: true})
+  token: string;
+
+  @Column({ type: 'boolean', nullable: false, default: false})
+  memberStatus: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 
