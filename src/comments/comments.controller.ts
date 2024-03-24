@@ -6,18 +6,22 @@ import { CommentsService } from './comments.service';
 import { AuthGuard } from '@nestjs/passport';
 import { UserInfo } from 'src/utils/decorator/userInfo.decorator';
 import { User } from 'src/users/entities/user.entity';
+import { ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Comment')
 @Controller('comments')
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
   /**댓글 조회 */
+  @ApiOperation({ summary: '댓글 조회' })
   @Get()
   async getAllComments(): Promise<Comment[]> {
     return await this.commentsService.getAllComments();
   }
 
   /**댓글 상세 조회 */
+  @ApiOperation({ summary: '댓글 상세 조회' })
   @Get(':cardId/:id')
   async getComment(@Query('cardId') cardId: number, @Param('id') id: number) {
     return this.commentsService.getCommentById(cardId, id);
@@ -25,6 +29,7 @@ export class CommentsController {
 
   /**댓글 생성 */
   //@Role()
+  @ApiOperation({ summary: '댓글 생성' })
   @UseGuards(AuthGuard('jwt'))
   @Post()
   // @UsePipes(ValidationPipe)
@@ -36,6 +41,7 @@ export class CommentsController {
 
   /**댓글 수정 */
   // @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: '댓글 수정' })
   @Patch(':id')
   async updateComment(/**@UserInfo() user: User,*/ @Param('id') id: number, @Body() updateCommentDto: UpdateCommentDto) {
     // await this.commentsService.updateComment(id, user.id, updateCommentDto.content);
@@ -45,6 +51,7 @@ export class CommentsController {
 
   // 댓글 삭제
   // @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: '댓글 삭제' })
   @Delete(':id')
   async deleteComment(/**@UserInfo() user: User,*/ @Param('id') id: number) {
     // await this.commentsService.deleteComment(id, user.id);
