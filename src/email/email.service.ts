@@ -98,7 +98,7 @@ export class EmailService {
         <h3>${title} 보드에 초대되었습니다.</h3>
         <p>아래 초대 수락 버튼을 클릭하시면 보드에 자동 등록됩니다!</p>
         <a
-          href="http://localhost:3030/boards/invite/accept?boardId=${boardId}&email=${email}"
+          href="http://localhost:3000/boards/invite/accept?boardId=${boardId}&email=${email}"
           class="button"
           >초대 수락</a
         >

@@ -73,21 +73,20 @@ export class BoardsService {
   async invite(userId: number, boardId: number, email: string) {
     const ownerUser = await this.checkOwner(boardId, userId);
     if (!ownerUser || !ownerUser.owner) {
-      throw new NotFoundException('이 보드의 초대할 권한이 없습니다.');
+      throw new UnauthorizedException('이 보드의 초대할 권한이 없습니다.');
     }
     const user = await this.userRepository.findOne({
       where: { email },
     });
-    const checkUSer = await this.boardMemberRepository.findOne({
+    const checkUser = await this.boardMemberRepository.findOne({
       where: { userId: user.id, boardId },
     });
-    if (checkUSer) {
+    if (checkUser) {
       throw new BadRequestException('이미 존재하는 멤버입니다.');
     }
   }
 
   async inviteAccept(boardId: number, email: string) {
-    console.log(boardId, email);
     const user = await this.userRepository.findOne({
       where: { email },
     });
