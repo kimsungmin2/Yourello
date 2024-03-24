@@ -116,6 +116,12 @@ export class CardsService {
     try {
       const card = await this.getCardById(cardId);
       await this.checkCardOwner(cardId, userId);
+      await queryRunner.manager
+        .getRepository(Card)
+        .createQueryBuilder('card')
+        .where('columnId = :columnId', { columnId: card.columnId })
+        .setLock('pessimistic_read')
+        .getMany();
 
       if (card.orderNum < newOrderNum) {
         await queryRunner.manager
@@ -202,6 +208,7 @@ export class CardsService {
     try {
       await this.getCardById(cardId);
       await this.checkCardOwner(cardId, userId);
+
       await queryRunner.manager.getRepository(Card).update(cardId, {
         title: updateCardDto.title,
         info: updateCardDto.info,
@@ -225,11 +232,19 @@ export class CardsService {
       const card = await this.getCardById(cardId);
       await this.checkCardOwner(cardId, userId);
       const column = await queryRunner.manager.getRepository(Columns).findOneBy({ id: card.columnId });
-      const NewColumn = await queryRunner.manager.getRepository(Columns).findOneBy({ id: columnId });
-      if (!NewColumn) {
+      const newColumn = await queryRunner.manager.getRepository(Columns).findOneBy({ id: columnId });
+
+      await queryRunner.manager
+        .getRepository(Card)
+        .createQueryBuilder('card')
+        .where('columnId = :columnId', { columnId: card.columnId })
+        .setLock('pessimistic_read')
+        .getMany();
+
+      if (!newColumn) {
         throw new NotFoundException('존재하지 않는 컬럼입니다.');
       }
-      if (column.boardId !== NewColumn.boardId) {
+      if (column.boardId !== newColumn.boardId) {
         throw new ForbiddenException('같은 보드에서만 이동이 가능합니다.');
       }
       await queryRunner.manager
@@ -237,8 +252,15 @@ export class CardsService {
         .createQueryBuilder('card')
         .update(Card)
         .set({ orderNum: () => 'orderNum - 1' })
-        .where('orderNum > :orderNum', { orderNum: card.orderNum })
+        .where('columnId = :columnId AND orderNum > :orderNum', { orderNum: card.orderNum, columnId: card.columnId })
         .execute();
+
+      await queryRunner.manager
+        .getRepository(Card)
+        .createQueryBuilder('card')
+        .where('columnId = :columnId', { columnId: columnId })
+        .setLock('pessimistic_read')
+        .getMany();
       //MoreThan 보다 이게 더 쉬움
       const maxCardOrderNum = await queryRunner.manager
         .getRepository(Card)
@@ -269,9 +291,16 @@ export class CardsService {
       await queryRunner.manager
         .getRepository(Card)
         .createQueryBuilder('card')
+        .where('columnId = :columnId', { columnId: card.columnId })
+        .setLock('pessimistic_read')
+        .getMany();
+
+      await queryRunner.manager
+        .getRepository(Card)
+        .createQueryBuilder('card')
         .update(Card)
         .set({ orderNum: () => 'orderNum - 1' })
-        .where('orderNum > :orderNum', { orderNum: card.orderNum })
+        .where('columnId = :columnId AND orderNum > :orderNum', { orderNum: card.orderNum, columnId: card.columnId })
         .execute();
       console.log('1124');
       await queryRunner.manager.getRepository(Card).delete({ id: cardId });
