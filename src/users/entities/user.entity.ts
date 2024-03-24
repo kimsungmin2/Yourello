@@ -1,9 +1,8 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { Role } from '../types/userRole.type';
-import { Comment } from 'src/comments/entities/comment.entity';
-import { Card } from 'src/cards/entities/card.entity';
-import { Board } from 'src/boards/entities/board.entity';
-import { BoardMember } from 'src/boards/entities/boardmember.entity';
+import { Comment } from '../../comments/entities/comment.entity';
+import { BoardMember } from '../../boards/entities/boardmember.entity';
+import { CardWorker } from '../../cards/entities/cardworker.entity';
 
 @Index('email', ['email'], { unique: true })
 @Entity({
@@ -39,6 +38,12 @@ export class User {
 
   @OneToMany((type) => Comment, (comment) => comment.user)
   comment: Comment[];
+
+  @OneToMany((type) => CardWorker, (cardWorker) => cardWorker.user)
+  cardWorker: CardWorker[];
+
+  @OneToMany((type) => CardWorker, (worker) => worker.workerId)
+  worker: CardWorker[];
 
   @OneToMany((type) => BoardMember, (boardMember) => boardMember.user)
   boardMember: BoardMember[];

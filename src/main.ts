@@ -2,9 +2,9 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
-import * as passport from 'passport';
-import * as cookieParser from 'cookie-parser';
-import * as session from 'express-session';
+import passport from 'passport';
+import cookieParser from 'cookie-parser';
+import session from 'express-session';
 import { HttpExceptionFilter } from './utils/fillter/http-exception.filter';
 
 declare const module: any;
@@ -38,7 +38,7 @@ async function bootstrap() {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  const port = process.env.PORT || 3030;
+  const port = process.env.PORT || 3000;
   await app.listen(port);
   console.log(`listening on port ${port}`);
 

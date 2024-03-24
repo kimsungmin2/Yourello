@@ -1,6 +1,5 @@
-import { Columns } from 'src/columns/entities/column.entity';
-import { Comment } from 'src/comments/entities/comment.entity';
-import { User } from 'src/users/entities/user.entity';
+import { Columns } from '../../columns/entities/column.entity';
+import { Comment } from '../../comments/entities/comment.entity';
 import {
   Column,
   CreateDateColumn,
@@ -13,6 +12,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { CardWorker } from './cardworker.entity';
+import { CardList } from './cardList.entity';
 
 @Entity({
   name: 'card',
@@ -31,10 +31,13 @@ export class Card {
   color: string;
 
   @Column({ type: 'varchar', nullable: false })
-  deadLine: string;
+  deadLine: Date;
 
   @Column({ type: 'varchar', nullable: false })
   cardImage: string;
+
+  @Column({ type: 'int', nullable: false })
+  orderNum: number;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -48,9 +51,19 @@ export class Card {
   @Column('int', { name: 'columnId', nullable: false })
   columnId: number;
 
-  @ManyToOne(() => Columns, (column) => column.card)
+  //   @Column('int', { name: 'userId', nullable: false })
+  //   userId: number;
+
+  @ManyToOne(() => Columns, (columns) => columns.card)
   @JoinColumn([{ name: 'columnId', referencedColumnName: 'id' }])
-  column: Columns;
+  columns: Columns;
+
+  //   @ManyToOne(() => User, (user) => user.card)
+  //   @JoinColumn([{ name: 'userId', referencedColumnName: 'id' }])
+  //   user: User;
+
+  @OneToMany((type) => CardList, (cardList) => cardList.card)
+  cardList: CardList[];
 
   @OneToMany((type) => Comment, (comment) => comment.card)
   comment: Comment[];

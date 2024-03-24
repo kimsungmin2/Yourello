@@ -1,5 +1,5 @@
-import { Columns } from 'src/columns/entities/column.entity';
-import { User } from 'src/users/entities/user.entity';
+import { Columns } from '../../columns/entities/column.entity';
+import { User } from '../../users/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
@@ -47,6 +47,6 @@ export class BoardMember {
   @JoinColumn({ name: 'boardId', referencedColumnName: 'id' })
   board: Board;
 
-  @OneToMany((type) => CardWorker, (cardWorker) => cardWorker.boardMember)
-  cardWorker: CardWorker[];
+  //   @OneToMany((type) => CardWorker, (cardWorker) => cardWorker.boardMember)
+  //   cardWorker: CardWorker[];
 }
