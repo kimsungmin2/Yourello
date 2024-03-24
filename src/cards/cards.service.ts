@@ -27,6 +27,7 @@ export class CardsService {
   // if (user.userId !== userId) {
   //   throw new ForbiddenException('카드를 만들 권한이 없습니다.');
   // }
+
   async createCard(
     userId: number,
     columnId: number,
@@ -121,16 +122,24 @@ export class CardsService {
           .getRepository(Card)
           .createQueryBuilder('card')
           .update(Card)
+          .where('columnId = :columnId AND orderNum <= :newOrderNum AND orderNum > :orderNum', {
+            newOrderNum,
+            orderNum: card.orderNum,
+            columnId: card.columnId,
+          })
           .set({ orderNum: () => 'orderNum - 1' })
-          .where('orderNum <= :newOrderNum AND orderNum > :orderNum', { newOrderNum, orderNum: card.orderNum })
           .execute();
       } else if (card.orderNum > newOrderNum) {
         await queryRunner.manager
           .getRepository(Card)
           .createQueryBuilder('card')
           .update(Card)
+          .where('columnId = :columnId AND orderNum < :orderNum AND orderNum >= :newOrderNum', {
+            newOrderNum,
+            orderNum: card.orderNum,
+            columnId: card.columnId,
+          })
           .set({ orderNum: () => 'orderNum + 1' })
-          .where('orderNum < :orderNum AND orderNum >= :newOrderNum', { newOrderNum, orderNum: card.orderNum })
           .execute();
       }
 
